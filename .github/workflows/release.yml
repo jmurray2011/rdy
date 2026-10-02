@@ -1,0 +1,123 @@
+name: release
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+*']
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  validate:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+  build:
+    needs: validate
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - {os: linux, arch: amd64, suffix: ''}
+          - {os: linux, arch: arm64, suffix: ''}
+          - {os: darwin, arch: amd64, suffix: ''}
+          - {os: darwin, arch: arm64, suffix: ''}
+          - {os: windows, arch: amd64, suffix: '.exe'}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate tag and main ancestry
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]
+          git fetch --no-tags origin main
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version: '1.26.8'
+          cache: true
+      - name: Build static binary
+        shell: bash
+        env:
+          TARGET_OS: ${{ matrix.os }}
+          TARGET_ARCH: ${{ matrix.arch }}
+          SUFFIX: ${{ matrix.suffix }}
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          version="${GITHUB_REF_NAME#v}"
+          CGO_ENABLED=0 GOOS="$TARGET_OS" GOARCH="$TARGET_ARCH" go build -trimpath -ldflags "-s -w -X main.buildVersion=$version" -o "build/rdy-$TARGET_OS-$TARGET_ARCH$SUFFIX" ./cmd/rdy
+      - name: Probe built linux amd64 binary
+        if: matrix.os == 'linux' && matrix.arch == 'amd64'
+        run: ./build/rdy-linux-amd64 --version
+      - name: Catalog release binary using embedded Syft library
+        shell: bash
+        env:
+          TARGET_OS: ${{ matrix.os }}
+          TARGET_ARCH: ${{ matrix.arch }}
+          SUFFIX: ${{ matrix.suffix }}
+        run: go run ./internal/release sbom "build/rdy-$TARGET_OS-$TARGET_ARCH$SUFFIX" "build/rdy-$TARGET_OS-$TARGET_ARCH$SUFFIX.cdx.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: rdy-${{ matrix.os }}-${{ matrix.arch }}
+          path: build/*
+          if-no-files-found: error
+  release:
+    needs: [validate, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version: '1.26.8'
+          cache: true
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: rdy-*
+          merge-multiple: true
+          path: build/release
+      - name: Prepare release notes, licensing and checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          sh scripts/release-notes.sh "$GITHUB_REF_NAME" > build/release-notes.md
+          cp LICENSE NOTICE THIRD_PARTY_NOTICES build/release/
+          (cd build/release && sha256sum rdy-* LICENSE NOTICE THIRD_PARTY_NOTICES > SHA256SUMS)
+      - uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
+        with:
+          subject-path: |
+            build/release/rdy-linux-amd64
+            build/release/rdy-linux-arm64
+            build/release/rdy-darwin-amd64
+            build/release/rdy-darwin-arm64
+            build/release/rdy-windows-amd64.exe
+      - uses: sigstore/cosign-installer@d7543c93d881b35a8faa02e8e3605f69b7a1ce62 # v3.10.0
+        with:
+          cosign-release: 'v3.1.3'
+      - name: Sign with GitHub OIDC and Rekor
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in build/release/rdy-*; do
+            [[ "$file" == *.cdx.json ]] && continue
+            cosign sign-blob --yes --bundle "$file.sigstore.json" "$file"
+          done
+          cosign sign-blob --yes --bundle build/release/SHA256SUMS.sigstore.json build/release/SHA256SUMS
+      - name: Publish release assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          flags=()
+          [[ "$GITHUB_REF_NAME" == *-* ]] && flags+=(--prerelease)
+          gh release create "$GITHUB_REF_NAME" build/release/* --verify-tag --notes-file build/release-notes.md "${flags[@]}"

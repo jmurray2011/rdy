@@ -1,0 +1,6 @@
+- from: pkg:maven/org.example.server/server-core
+  to: pkg:maven/org.example.server.embed/server-embed-core
+- from: pkg:maven/org.example.server/server-coyote
+  to: pkg:maven/org.example.server.embed/server-embed-core
+- from: pkg:maven/org.example.old/parser
+  to: pkg:maven/org.example/parser
