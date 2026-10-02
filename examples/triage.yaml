@@ -1,0 +1,16 @@
+- package: pkg:maven/org.example/runtime
+  cve: CVE-2099-0001
+  status: not_affected
+  reason: The affected feature is absent from the shipped configuration.
+  reviewed_by: Fictional release reviewer
+  reviewed_on: 2099-01-01
+  expires: 2099-02-01
+  justification: code_not_reachable
+- package: pkg:npm/example-frontend
+  cve: CVE-2099-0002
+  status: accepted
+  reason: Exposure reviewed and accepted under the fictional release policy.
+- package: pkg:maven/org.example/parser
+  cve: CVE-2099-0003
+  status: fixed_in
+  reason: The fix was backported and confirmed in the shipped parser.

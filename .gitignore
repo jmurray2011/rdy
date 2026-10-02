@@ -1,0 +1,17 @@
+/rdy
+/dist/
+*.exe
+/build/
+/report/
+/.cache/
+*.out
+coverage.*
+*.test
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+.env
+go.work
+go.work.sum

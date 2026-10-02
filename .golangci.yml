@@ -1,0 +1,19 @@
+version: "2"
+linters:
+  default: standard
+  enable:
+    - depguard
+    - staticcheck
+  settings:
+    depguard:
+      rules:
+        core:
+          files:
+            - "**/core/*.go"
+            - "!**/*_test.go"
+          list-mode: strict
+          allow:
+            - $gostd
+formatters:
+  enable:
+    - gofumpt
