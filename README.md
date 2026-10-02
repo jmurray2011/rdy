@@ -122,4 +122,4 @@ rdy does not bundle or redistribute the vulnerability database. It downloads Anc
 
 ## License
 
-[Apache-2.0](LICENSE), Copyright 2026 Josh Murray. [NOTICE](NOTICE) points to generated [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES), including upstream notices, elected dual licenses and MPL source URLs.
+[Apache-2.0](LICENSE), Copyright 2026 Josh Murray. [NOTICE](NOTICE) points to THIRD_PARTY_NOTICES, which is generated from the release binaries and attached to each release; it includes upstream notices, elected dual licenses and MPL source URLs. Run `sh scripts/third-party-notices.sh` to generate it locally.
