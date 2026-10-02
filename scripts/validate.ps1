@@ -29,5 +29,3 @@ try {
 }
 & go mod tidy -diff
 if ($LASTEXITCODE -ne 0) { throw 'Module tidy drift' }
-& go run ./internal/notices -check
-if ($LASTEXITCODE -ne 0) { throw 'Third-party notices drift' }

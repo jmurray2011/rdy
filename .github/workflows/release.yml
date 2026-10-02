@@ -90,7 +90,12 @@ jobs:
         run: |
           set -euo pipefail
           sh scripts/release-notes.sh "$GITHUB_REF_NAME" > build/release-notes.md
-          cp LICENSE NOTICE THIRD_PARTY_NOTICES build/release/
+          go mod download
+          go run ./internal/notices -out build/release/THIRD_PARTY_NOTICES \
+            build/release/rdy-linux-amd64 build/release/rdy-linux-arm64 \
+            build/release/rdy-darwin-amd64 build/release/rdy-darwin-arm64 \
+            build/release/rdy-windows-amd64.exe
+          cp LICENSE NOTICE build/release/
           (cd build/release && sha256sum rdy-* LICENSE NOTICE THIRD_PARTY_NOTICES > SHA256SUMS)
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:

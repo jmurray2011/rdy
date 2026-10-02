@@ -8,7 +8,7 @@ Run these steps yourself; preparing the repository does not run them. The candid
 4. Stage explicit paths and set the validation script executable before the first commit:
 
    ```sh
-   git add .github .gitattributes .gitignore .golangci.yml CHANGELOG.md CONTRIBUTING.md LICENSE NOTICE README.md SECURITY.md THIRD_PARTY_NOTICES go.mod go.sum cmd core docs examples gate internal scripts
+   git add .github .gitattributes .gitignore .golangci.yml CHANGELOG.md CONTRIBUTING.md LICENSE NOTICE README.md SECURITY.md go.mod go.sum cmd core docs examples gate internal scripts
    git update-index --chmod=+x scripts/validate.sh
    git commit -m "Initial rdy release"
    ```
@@ -22,7 +22,7 @@ Run these steps yourself; preparing the repository does not run them. The candid
    git push -u origin main
    ```
 
-8. Confirm main CI is green, including notice drift and the native RPM/DEB fixtures.
+8. Confirm main CI is green, including the native RPM/DEB fixtures.
 9. Exercise a candidate tag (its exact CHANGELOG section already exists):
 
    ```sh
