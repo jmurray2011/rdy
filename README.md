@@ -89,7 +89,7 @@ rdy ... --strict --allow-warning tags-ignored,frontend-not-covered
 
 ## CI
 
-Fetch tags and full history, use HEAD for tag-triggered builds, and retain the database cache:
+Run rdy in the workflow that builds the artifact, after the build step and before anything publishes it. A non-zero exit stops the job, so a failing release never ships. Example GitHub Actions steps:
 
 ```yaml
 - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -102,13 +102,16 @@ Fetch tags and full history, use HEAD for tag-triggered builds, and retain the d
 - run: rdy --name fictional-app --release 1.2.3 --artifact build/app.jar --repo . --branch HEAD --commit "$GITHUB_SHA" --triage triage.yaml --db-cache .cache/rdy/db --out report
 ```
 
+Why each piece is there:
+
+- `fetch-depth: 0`: the default checkout is a shallow clone without tags. rdy compares `--release` against your existing release tags (a version lower than the latest tag fails) and lists commits from the previous release that are missing from this one. Both need full history and tags; a shallow clone produces a `shallow-repo` warning and incomplete results.
+- `--branch HEAD`: a tag-triggered workflow checks out a detached commit, so there is no local `main` to name. `HEAD` is the commit that was checked out and built.
+- `--commit "$GITHUB_SHA"`: asserts that the checked-out source is the commit that triggered the workflow. A mismatch fails the gate.
+- `actions/cache` with `--db-cache`: keeps the advisory database between runs instead of downloading it every time. The `run_id` key saves a fresh copy after each run and `restore-keys` restores the newest one. rdy still updates the database on each online run; see [database freshness](docs/database-and-offline.md).
+
 ## Supported artifacts
 
-| OS | Artifact support and requirements |
-| --- | --- |
-| Linux amd64/arm64 | JAR/WAR; RPM with `rpm`/`bsdtar`; DEB with `dpkg-deb`/`bsdtar`; CycloneDX SBOM |
-| macOS amd64/arm64 | JAR/WAR and CycloneDX SBOM; RPM/DEB require compatible native extraction tools |
-| Windows amd64 | JAR/WAR and CycloneDX SBOM |
+JAR, WAR, RPM (including RPM 6 payloads), DEB and CycloneDX SBOM on Linux, macOS and Windows. Extraction is built in; no external tools are needed.
 
 JAR/WAR versions come from `Implementation-Version`; RPM VERSION ignores release and strips `~`/`^` suffixes; DEB Version strips epoch and revision. Containers, plain binaries, wheels and npm tarballs use `--sbom` instead of `--artifact`. Numeric tags allow leading `v`; prerelease tags are ignored. Calendar releases work (for example `--release 2026.10.2`); use `--tag-pattern '^api-v([0-9]+(?:\.[0-9]+)*)$'` for prefixed numeric tags.
 

@@ -16,13 +16,6 @@ jobs:
         with:
           go-version: '1.26.8'
           cache: true
-      - name: Install native artifact fixture tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libarchive-tools rpm
-          command -v bsdtar
-          command -v rpmbuild
-          command -v dpkg-deb
       - name: Install pinned validation tools
         run: |
           go install mvdan.cc/gofumpt@v0.12.0

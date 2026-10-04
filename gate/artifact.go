@@ -171,58 +171,13 @@ func extract(ctx context.Context, artifact, root string, links *int) (string, er
 			}
 		}
 		return version, nil
-	case ".rpm", ".deb":
-		var b []byte
-		var e error
-		declared, e := artifactVersion(ctx, artifact, command)
-		b = []byte(declared)
-		if e != nil {
-			return "", e
-		}
-		scratch, e := os.MkdirTemp("", "rdy-tar-")
-		if e != nil {
-			return "", e
-		}
-		defer func() { _ = os.RemoveAll(scratch) }()
-		archive := filepath.Join(scratch, "payload.tar")
-		if _, e = command(ctx, "", "bsdtar", "-cf", archive, "@"+artifact); e != nil {
-			return "", e
-		}
-		if e = extractTarFile(ctx, archive, root, links); e != nil {
-			return "", e
-		}
-		if extension == ".deb" {
-			paths, e := filepath.Glob(filepath.Join(root, "data.tar*"))
-			if e != nil {
-				return "", e
-			}
-			if len(paths) != 1 {
-				return "", fmt.Errorf("deb has no unique data archive")
-			}
-			if _, e = command(ctx, "", "bsdtar", "-cf", archive, "@"+paths[0]); e != nil {
-				return "", e
-			}
-			if e = extractTarFile(ctx, archive, root, links); e != nil {
-				return "", e
-			}
-		}
-		return strings.TrimSpace(string(b)), nil
+	case ".rpm":
+		return extractRPM(ctx, artifact, root, links)
+	case ".deb":
+		return extractDEB(ctx, artifact, root, links)
 	default:
 		return "", fmt.Errorf("unsupported artifact %q; supported types: .jar .war .rpm .deb, or --sbom", artifact)
 	}
-}
-
-func extractTarFile(ctx context.Context, path, root string, links *int) error {
-	f, e := os.Open(path)
-	if e != nil {
-		return e
-	}
-	defer func() { _ = f.Close() }()
-	n, err := extractTarCoverage(ctx, f, root, 1<<30, 4<<30)
-	if links != nil {
-		*links += n
-	}
-	return err
 }
 
 func extractTarLimited(ctx context.Context, reader io.Reader, root string, memberLimit, totalLimit int64) error {
@@ -283,15 +238,4 @@ func extractTarPolicy(ctx context.Context, reader io.Reader, root string, member
 			return links, fmt.Errorf("unsupported archive member %s", h.Name)
 		}
 	}
-}
-
-func artifactVersion(ctx context.Context, artifact string, run func(context.Context, string, string, ...string) ([]byte, error)) (string, error) {
-	var data []byte
-	var err error
-	if strings.EqualFold(filepath.Ext(artifact), ".rpm") {
-		data, err = run(ctx, "", "rpm", "-qp", "--queryformat", "%{VERSION}", "--", artifact)
-	} else {
-		data, err = run(ctx, "", "dpkg-deb", "--field", "--", artifact, "Version")
-	}
-	return strings.TrimSpace(string(data)), err
 }

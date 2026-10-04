@@ -12,7 +12,7 @@ CGO_ENABLED=0 go build -trimpath -o build/rdy ./cmd/rdy
 sh scripts/validate.sh
 ```
 
-The embedded scanners are Syft 1.54.0 and Grype 0.119.0; scanner executables are not prerequisites. Linux native fixture tests need libarchive-tools, rpm (rpmbuild) and dpkg-deb. Race tests need a C compiler; Windows can use LLVM-MinGW clang (`CC=clang`) with `pwsh -File scripts/validate.ps1`.
+The embedded scanners are Syft 1.54.0 and Grype 0.119.0; scanner executables are not prerequisites. RPM and DEB fixtures are built in Go; no packaging tools are needed. Race tests need a C compiler; Windows can use LLVM-MinGW clang (`CC=clang`) with `pwsh -File scripts/validate.ps1`.
 
 Use TDD for code changes: show the failing test before implementation. Tests are hermetic and use fictional names, temporary repositories and scanner fakes. `core` is stdlib-only, enforced by depguard. Preserve default verdict behavior, opt-in strict behavior and the documented opaque rule unless a behavior change is agreed first.
 

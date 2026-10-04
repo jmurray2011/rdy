@@ -1,16 +1,18 @@
 # Artifact support and coverage limits
 
-JAR/WAR extraction and manifests use the Go standard library. RPM extraction requires
-`rpm` and `bsdtar`; DEB requires `dpkg-deb` and `bsdtar`. Native tools query versions.
+All extraction is built in. JAR/WAR use the Go standard library. RPM headers are read
+with go-rpmutils and the cpio payload, including RPM 6's stripped entries, by rdy itself;
+the version is the header VERSION. DEB reads the ar members, then the control and data
+tarballs (gzip, xz, zstd, bzip2 or none); the version is the control Version field.
 ZIP symlinks remain rejected: JAR/WAR manifests and cataloging expect regular
 archive entries, and a link would make runtime contents ambiguous. RPM/DEB
 payload links are conventional and skipped with counted warnings; database
 archives always reject links. All paths retain traversal checks.
-bsdtar converts payloads into tar; Go extracts regular files and directories with
-traversal and size checks. Symlinks and hardlinks are skipped without being created or followed; their count
+Regular files and directories are extracted with traversal and size checks. Symlinks and hardlinks are skipped without being created or followed; their count
 is a warning. Special files, unsafe paths and duplicate file paths are rejected.
-Limits are 1 GiB per member and 4 GiB per archive. Tests include a tiny real RPM with a symlink when `rpmbuild`, `rpm` and `bsdtar`
-are installed; otherwise that integration test reports a clear skip.
+Limits are 1 GiB per member and 4 GiB per archive. Tests build RPM (classic and RPM 6
+stripped) and DEB (gzip, xz and zstd) fixtures in Go, each with a symlink, and run
+extraction with an empty PATH.
 
 Set a meaningful `--min-components` floor for your application. The default catches
 empty catalogs; it cannot decide whether a one-component catalog is plausible.

@@ -4,6 +4,12 @@ All notable changes are documented here, following [Keep a Changelog](https://ke
 
 ## [Unreleased]
 
+### Changed
+- RPM and DEB extraction and version reading are built in. `bsdtar`, `rpm` and `dpkg-deb` are no longer needed, so RPM and DEB artifacts work on macOS and Windows too.
+
+### Added
+- RPM 6 payloads (stripped cpio entries) are supported.
+
 ## [0.1.0-rc1]
 
 ### Added

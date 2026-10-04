@@ -61,8 +61,11 @@ func TestThirdRoundCIAndReleaseProbe(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	if !strings.Contains(string(b), "libarchive-tools") || !strings.Contains(string(b), "rpm") {
-		t.Fatal("native fixture tools absent")
+	// Extraction is built in; CI must not install packaging tools that tests could lean on.
+	for _, tool := range []string{"libarchive-tools", "bsdtar", "rpmbuild", "dpkg-deb"} {
+		if strings.Contains(string(b), tool) {
+			t.Fatalf("CI installs %s; RPM and DEB handling must not need it", tool)
+		}
 	}
 	var w struct {
 		On map[string]any `yaml:"on"`
