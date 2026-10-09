@@ -4,7 +4,7 @@ go 1.26.8
 
 require (
 	github.com/anchore/clio v0.1.1
-	github.com/anchore/grype v0.119.0
+	github.com/anchore/grype v0.120.0
 	github.com/anchore/syft v1.54.0
 	github.com/google/rpmpack v0.7.1
 	github.com/klauspost/compress v1.20.1
@@ -53,7 +53,7 @@ require (
 	github.com/anchore/go-logger v0.2.0 // indirect
 	github.com/anchore/go-lzo v0.1.1 // indirect
 	github.com/anchore/go-macholibre v0.1.1 // indirect
-	github.com/anchore/go-rpmdb v0.2.0 // indirect
+	github.com/anchore/go-rpmdb v0.2.1 // indirect
 	github.com/anchore/go-struct-converter v0.2.0-rc2 // indirect
 	github.com/anchore/go-sync v0.1.2 // indirect
 	github.com/anchore/go-version v1.2.2-0.20210903204242-51efa5b487c4 // indirect
@@ -141,7 +141,7 @@ require (
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.15 // indirect
 	github.com/github/go-spdx/v2 v2.7.0 // indirect
-	github.com/glebarez/go-sqlite v1.22.0 // indirect
+	github.com/glebarez/go-sqlite v1.23.0 // indirect
 	github.com/glebarez/sqlite v1.11.0 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.9.1 // indirect
@@ -230,8 +230,8 @@ require (
 	github.com/opencontainers/image-spec v1.1.1 // indirect
 	github.com/opencontainers/runtime-spec v1.3.0 // indirect
 	github.com/opencontainers/selinux v1.15.1 // indirect
-	github.com/openvex/go-vex v0.2.8 // indirect
-	github.com/package-url/packageurl-go v0.1.5 // indirect
+	github.com/openvex/go-vex v0.2.9 // indirect
+	github.com/package-url/packageurl-go v0.1.7 // indirect
 	github.com/pandatix/go-cvss v0.6.4 // indirect
 	github.com/pborman/indent v1.2.1 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
