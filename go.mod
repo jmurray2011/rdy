@@ -7,7 +7,7 @@ require (
 	github.com/anchore/grype v0.119.0
 	github.com/anchore/syft v1.54.0
 	github.com/google/rpmpack v0.7.1
-	github.com/klauspost/compress v1.20.1
+	github.com/klauspost/compress v1.20.3
 	github.com/sassoftware/go-rpmutils v0.4.0
 	github.com/ulikunitz/xz v0.5.17
 	github.com/wagoodman/go-progress v0.0.0-20260303201901-10176f79b2c0
