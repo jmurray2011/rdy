@@ -11,7 +11,7 @@ require (
 	github.com/sassoftware/go-rpmutils v0.4.0
 	github.com/ulikunitz/xz v0.5.17
 	github.com/wagoodman/go-progress v0.0.0-20260303201901-10176f79b2c0
-	go.yaml.in/yaml/v3 v3.0.5
+	go.yaml.in/yaml/v3 v3.0.6
 	modernc.org/sqlite v1.60.1
 )
 
